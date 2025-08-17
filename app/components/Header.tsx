@@ -7,15 +7,14 @@ export default function Header() {
     <header className='absolute top-0 z-10 h-20 flex items-center w-full'>
         <div className='flex justify-between items-center w-full px-5 text-background uppercase font-bold text-xs'>
             <LinkItem ItemTo='Instagram'></LinkItem>
-            <div className='leading-tight '>
+            <div className='leading-tight flex items-center gap-1 text-lg font-black'>
                 <div>
-                    Astrid 
+                    A
+                </div>
+                <div className='bg-background h-0.5 w-3 rounded'>
                 </div>
                 <div>
-                    Delaney 
-                </div>
-                <div className='text-end'>
-                    Astrid 
+                    D 
                 </div>
             </div>
             <LinkItem ItemTo='Email'></LinkItem>

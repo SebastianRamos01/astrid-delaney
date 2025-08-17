@@ -13,18 +13,38 @@ export default function Home() {
   const DURATION = 6;
   const [videoIndex, setVideoIndex] = useState(0);
   const progressBarRefs = useRef<HTMLDivElement[]>([]);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const words = namePage.split(' ');
 
    // Timer para cambiar video
   useEffect(() => {
-    const interval = setInterval(() => {
+    // Función para iniciar el timer
+    const startInterval = () => {
+      intervalRef.current = setInterval(() => {
+        setVideoIndex((prev) =>
+          prev === projects.length - 1 ? 0 : prev + 1
+        );
+      }, DURATION * 1000);
+    };
+
+    startInterval();
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
+
+  // Click del articulo
+  const handleClick = (index: number) => {
+    setVideoIndex(index);
+    // Reiniciar el timer
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
       setVideoIndex((prev) =>
         prev === projects.length - 1 ? 0 : prev + 1
       );
     }, DURATION * 1000);
-
-    return () => clearInterval(interval);
-  }, []);
+  };
 
   // Animación de barra
   useEffect(() => {
@@ -75,22 +95,26 @@ export default function Home() {
     <Loader Children={
       <div className="h-screen w-full relative text-background">
         <Header></Header>
-        <div className="absolute z-10 w-full p-5 top-20">
-          <p id="title" className="text-9xl flex justify-between font-bebas leading-[84%] overflow-hidden">
+        <div className="absolute z-10 w-full px-5 pb-5 pt-20 top-0 h-full">
+          <div className="text-9xl flex flex-col md:flex-row justify-between font-bebas h-full md:h-fit">
             {words.map((el, i) => (
-            <span key={i} id="main-title" className="origin-bottom-left">{el}</span>
+              <div key={i}>
+                <div className={`overflow-hidden h-fit leading-[84%] ${i === 1 ? 'text-right' : ''}`}>
+                  <div id="main-title" className="origin-bottom-left">{el}</div>
+                </div>
+                {i === 0 ? (<p className="text-xs max-w-60 font-medium font-inter">{subTitlePage}</p>) : ''}
+              </div>
             ))}
-          </p>
-          <p className="text-xs max-w-60 font-medium">{subTitlePage}</p>
+          </div>
         </div>
         <ul className="size-full relative">
           {projects.map((el, i) => (
             <li 
               key={i}
               id={`bg-video-${i}`} 
-              className="absolute top-0 size-full object-cover">
+              className="absolute top-0 size-full">
               <video 
-                className='' 
+                className='object-cover size-full' 
                 src={el.videoSrc}
                 autoPlay
                 muted
@@ -99,9 +123,12 @@ export default function Home() {
             </li>
           ))}
         </ul>
-        <ul className="absolute bottom-0 z-10 flex gap-3 m-5 text-xs">
+        <ul className="absolute bottom-1/2 translate-y-1/2 md:bottom-0 md:translate-y-0 z-10 flex gap-3 m-5 text-xs">
           {projects.map((el, i) => (
-            <article key={i} className="min-w-52 cursor-pointer">
+            <article 
+              key={i}
+              onClick={() => handleClick(i)} 
+              className="min-w-52 cursor-pointer">
               <div className="my-4 flex flex-col">
                 <h2 className="uppercase font-medium">{el.title}</h2>
                 <p className="text-stone-400">{el.studio}</p>
