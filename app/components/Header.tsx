@@ -4,7 +4,7 @@ import LinkItem from './LinkItem'
 
 export default function Header() {
     return (
-    <header className='absolute top-0 z-10 h-20 flex items-center w-full'>
+    <header className='absolute top-0 z-20 h-20 flex items-center w-full'>
         <div className='flex justify-between items-center w-full px-5 text-background uppercase font-bold text-xs'>
             <LinkItem ItemTo='Instagram'></LinkItem>
             <div className='leading-tight flex items-center gap-1 text-lg font-black'>

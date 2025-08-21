@@ -6,44 +6,45 @@ import Loader from "./components/Loader";
 import Header from "./components/Header";
 import { projects, namePage, subTitlePage } from './data/mainData'
 import { useEffect, useRef, useState } from "react";
+import VideoPlayer from "./components/VideoPlayer";
 
 
 export default function Home() {
   
   const DURATION = 6;
   const [videoIndex, setVideoIndex] = useState(0);
+
+  const videoRefs = useRef<HTMLVideoElement[]>([]);
+  const barTween = useRef<gsap.core.Tween | null>(null);
   const progressBarRefs = useRef<HTMLDivElement[]>([]);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  
   const words = namePage.split(' ');
 
-   // Timer para cambiar video
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
+  const toggleVideoOpen = () => setIsVideoOpen(prev => !prev);
+
+   // 👉 función para iniciar un timer sincronizado con GSAP progress
+  const startTimer = (time = DURATION * 1000) => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+
+    intervalRef.current = setTimeout(() => {
+      setVideoIndex(prev => (prev === projects.length - 1 ? 0 : prev + 1));
+    }, time);
+  };
+
+  // Timer inicial
   useEffect(() => {
-    // Función para iniciar el timer
-    const startInterval = () => {
-      intervalRef.current = setInterval(() => {
-        setVideoIndex((prev) =>
-          prev === projects.length - 1 ? 0 : prev + 1
-        );
-      }, DURATION * 1000);
-    };
-
-    startInterval();
-
+    startTimer();
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, []);
 
-  // Click del articulo
+  // Click en artículo → cambio de video y reinicio de timer
   const handleClick = (index: number) => {
     setVideoIndex(index);
-    // Reiniciar el timer
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(() => {
-      setVideoIndex((prev) =>
-        prev === projects.length - 1 ? 0 : prev + 1
-      );
-    }, DURATION * 1000);
+    startTimer();
   };
 
   // Animación de barra
@@ -53,20 +54,21 @@ export default function Home() {
         gsap.set(bar, { scaleX: i === videoIndex ? 0 : 1 });
       });
 
-      gsap.fromTo(
+      barTween.current = gsap.fromTo(
         progressBarRefs.current[videoIndex],
         { scaleX: 0 },
         {
           scaleX: 1,
           duration: DURATION,
-          ease: "linear"
+          ease: "linear",
         }
       );
     });
+
     return () => ctx.revert();
   }, [videoIndex]);
 
-  // Animación de videos
+  // Animación de videos (fade)
   useEffect(() => {
     projects.forEach((_, i) => {
       gsap.to(`#bg-video-${i}`, {
@@ -76,6 +78,35 @@ export default function Home() {
       });
     });
   }, [videoIndex]);
+
+  // Pausar / Reanudar cuando se abre/cierra el modal
+  useEffect(() => {
+    const currentVideo = videoRefs.current[videoIndex];
+
+    if (isVideoOpen) {
+      // Pausar timer
+      if (intervalRef.current) clearInterval(intervalRef.current);
+
+      // Pausar video
+      if (currentVideo) currentVideo.pause();
+
+      // Pausar barra
+      if (barTween.current) barTween.current.pause();
+    } else {
+      // Reanudar video
+      if (currentVideo) currentVideo.play();
+
+      if (barTween.current) {
+        const remaining = (1 - barTween.current.progress()) * DURATION * 1000;
+
+        // Reiniciar timer ajustado
+        startTimer(remaining);
+
+        // Reanudar barra
+        barTween.current.resume();
+      }
+    }
+  }, [isVideoOpen, videoIndex]);
   
   // Aniamcion de Titulo 
   useGSAP(() => {
@@ -94,13 +125,14 @@ export default function Home() {
   return (
     <Loader Children={
       <div className="h-screen w-full relative text-background">
+        {isVideoOpen && <VideoPlayer handleIsOpen={toggleVideoOpen} videoIndex={videoIndex}></VideoPlayer> }
         <Header></Header>
-        <div className="absolute z-10 w-full px-5 pb-5 pt-20 top-0 h-full">
+        <div className="absolute z-10 w-full px-5 pb-5 pt-20 top-0 h-full md:h-fit">
           <div className="text-9xl flex flex-col md:flex-row justify-between font-bebas h-full md:h-fit">
             {words.map((el, i) => (
-              <div key={i}>
+              <div key={i} className='w-full'>
                 <div className={`overflow-hidden h-fit leading-[84%] ${i === 1 ? 'text-right' : ''}`}>
-                  <div id="main-title" className="origin-bottom-left">{el}</div>
+                  <div id="main-title" className="origin-bottom-left w-full">{el}</div>
                 </div>
                 {i === 0 ? (<p className="text-xs max-w-60 font-medium font-inter">{subTitlePage}</p>) : ''}
               </div>
@@ -112,14 +144,18 @@ export default function Home() {
             <li 
               key={i}
               id={`bg-video-${i}`} 
-              className="absolute top-0 size-full">
-              <video 
-                className='object-cover size-full' 
-                src={el.videoSrc}
-                autoPlay
-                muted
-                loop
-              ></video>
+              className="absolute top-0 size-full cursor-pointer">
+              <video
+                  ref={(el) => {
+                    if (el) videoRefs.current[i] = el;
+                  }}
+                  src={el.videoSrc}
+                  onClick={toggleVideoOpen}
+                  className="size-full object-cover"
+                  autoPlay
+                  muted
+                  loop
+                ></video>
             </li>
           ))}
         </ul>
@@ -135,7 +171,9 @@ export default function Home() {
               </div>
               <div className="relative w-full">
                 <div
-                  ref={(div) => { progressBarRefs.current[i] = div!; }}
+                   ref={(el) => {
+                      if (el) progressBarRefs.current[i] = el;
+                    }}
                   className="origin-left w-full h-[0.095rem] bg-background absolute z-10"
               ></div>
                 <div className="w-full h-[0.095rem] bg-stone-600 absolute opacity-40"></div>

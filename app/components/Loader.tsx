@@ -24,7 +24,11 @@ export default function Loader({ Children } : { Children: React.ReactNode}) {
         y: '-100%',
         duration: 0.7,
         ease: 'expo.in'
-      }, '<')  
+      }, '<')
+      tl.to('#loader-text-cont', {
+        display: 'none',
+        delay: 1,
+      }, '>')
     })
 
   return (
