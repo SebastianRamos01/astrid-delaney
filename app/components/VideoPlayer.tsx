@@ -9,22 +9,63 @@ export default function VideoPlayer({handleIsOpen, videoIndex} : {handleIsOpen :
     const project = projects[iVideo];
 
     const [isPaused, setIsPaused] = useState(false)
+    const [progress, setProgress] = useState(0) // porcentaje (0 - 100)
+    const [duration, setDuration] = useState(0)
+    const [currentTime, setCurrentTime] = useState(0)
+
     const videoRef = useRef<HTMLVideoElement>(null)
 
     const togglePaused = () => {
     if (videoRef.current) {
         if (videoRef.current.paused) {
-            videoRef.current.play()
-            setIsPaused(false)
-        } else {
-            videoRef.current.pause();
-            setIsPaused(true)
+                videoRef.current.play()
+                setIsPaused(false)
+            } else {
+                videoRef.current.pause();
+                setIsPaused(true)
+            }
         }
-    }
-};
+    };
 
-    const [isMuted, setIsMuted] = useState(true)
-    const toggleSound = () => setIsMuted(prev => !prev);
+    // const [isMuted, setIsMuted] = useState(true)
+    // const toggleSound = () => setIsMuted(prev => !prev);
+
+    // Actualizar progreso
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+
+    const handleTimeUpdate = () => {
+      setCurrentTime(video.currentTime)
+      if (video.duration) {
+        setProgress((video.currentTime / video.duration) * 100)
+      }
+    }
+
+    const handleLoadedMetadata = () => {
+      setDuration(video.duration)
+    }
+
+    video.addEventListener('timeupdate', handleTimeUpdate)
+    video.addEventListener('loadedmetadata', handleLoadedMetadata)
+
+    return () => {
+      video.removeEventListener('timeupdate', handleTimeUpdate)
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata)
+    }
+  }, [])
+
+  // Permitir hacer seek al dar click en la barra
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!videoRef.current || !duration) return
+
+    const rect = e.currentTarget.getBoundingClientRect()
+    const clickX = e.clientX - rect.left
+    const newTime = (clickX / rect.width) * duration
+
+    videoRef.current.currentTime = newTime
+    setProgress((newTime / duration) * 100)
+  }
     
 
   return (
@@ -71,23 +112,20 @@ export default function VideoPlayer({handleIsOpen, videoIndex} : {handleIsOpen :
                 }
             </div>
             <nav className='flex items-center absolute bottom-0 w-full p-3 gap-2'>
-                <div>
-                    <div 
-                        onClick={togglePaused}
-                        className='w-fit bg-background rounded-full p-2 hidden cursor-pointer'>
-                        <svg className="size-5 text-foreground" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                            <path  fillRule="evenodd" d="M8.6 5.2A1 1 0 0 0 7 6v12a1 1 0 0 0 1.6.8l8-6a1 1 0 0 0 0-1.6l-8-6Z" clipRule="evenodd"/>
-                        </svg>
-                    </div>
-                    <div
-                        onClick={togglePaused} 
-                        className='w-fit bg-background rounded-full p-2 cursor-pointer'>
-                        <svg className="size-5 text-foreground" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                            <path fillRule="evenodd" d="M8 5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H8Zm7 0a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1Z" clipRule="evenodd"/>
-                        </svg>
-                    </div>
+                <div
+                    className='bg-background rounded-full p-2 hidden cursor-pointer'
+                    onClick={togglePaused}>
+                        {isPaused ? (
+                            <svg className="size-5 text-foreground" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path  fillRule="evenodd" d="M8.6 5.2A1 1 0 0 0 7 6v12a1 1 0 0 0 1.6.8l8-6a1 1 0 0 0 0-1.6l-8-6Z" clipRule="evenodd"/>
+                            </svg>
+                        ) : (
+                            <svg className="size-5 text-foreground" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path fillRule="evenodd" d="M8 5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H8Zm7 0a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1Z" clipRule="evenodd"/>
+                            </svg>
+                        )}
                 </div>
-                <div>
+                {/* <div>
                     <div
                         onClick={toggleSound} 
                         className='w-fit bg-background rounded-full p-2 hidden cursor-pointer'>
@@ -104,12 +142,31 @@ export default function VideoPlayer({handleIsOpen, videoIndex} : {handleIsOpen :
                             <path d="M5.707 4.293a1 1 0 0 0-1.414 1.414l14 14a1 1 0 0 0 1.414-1.414l-.004-.005C21.57 16.498 22 13.938 22 12a9.972 9.972 0 0 0-2.929-7.071 1 1 0 1 0-1.414 1.414A7.972 7.972 0 0 1 20 12c0 1.752-.403 3.636-1.712 4.873l-1.433-1.433C17.616 14.37 18 13.107 18 12c0-1.678-.69-3.197-1.8-4.285a1 1 0 1 0-1.4 1.428A3.985 3.985 0 0 1 16 12c0 .606-.195 1.335-.59 1.996L13 11.586V6.135c0-1.696-1.978-2.622-3.28-1.536L7.698 6.284l-1.99-1.991ZM4 8h.586L13 16.414v1.451c0 1.696-1.978 2.622-3.28 1.536L5.638 16H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2Z"/>
                         </svg>
                     </div>
-                </div>
-                <div className='w-full'>
-                    <div className='bg-background h-0.5 w-full'></div>
-                </div>
+                </div> */}
+                <div 
+            className='w-full cursor-pointer'
+            onClick={handleSeek}
+          >
+            <div className="relative w-full h-1 bg-stone-600 rounded">
+              <div 
+                className="absolute top-0 left-0 h-1 bg-background rounded"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            {/* <div className="flex justify-between text-[0.65rem] mt-1 text-stone-300 font-mono">
+              <span>{formatTime(currentTime)}</span>
+              <span>{formatTime(duration)}</span>
+            </div> */}
+          </div>
             </nav>
         </div>
     </div>
   )
 }
+
+// function formatTime(time: number) {
+//   if (isNaN(time)) return "0:00";
+//   const minutes = Math.floor(time / 60);
+//   const seconds = Math.floor(time % 60).toString().padStart(2, "0");
+//   return `${minutes}:${seconds}`;
+// }

@@ -16,7 +16,8 @@ export default function Home() {
 
   const videoRefs = useRef<HTMLVideoElement[]>([]);
   const barTween = useRef<gsap.core.Tween | null>(null);
-  const progressBarRefs = useRef<HTMLDivElement[]>([]);
+  const progressBarDesktopRefs = useRef<HTMLDivElement[]>([]);
+  const progressBarMobileRefs = useRef<HTMLDivElement[]>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   
   const words = namePage.split(' ');
@@ -24,7 +25,7 @@ export default function Home() {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const toggleVideoOpen = () => setIsVideoOpen(prev => !prev);
 
-   // 👉 función para iniciar un timer sincronizado con GSAP progress
+   // Función para iniciar un timer sincronizado con GSAP progress
   const startTimer = (time = DURATION * 1000) => {
     if (intervalRef.current) clearInterval(intervalRef.current);
 
@@ -50,12 +51,19 @@ export default function Home() {
   // Animación de barra
   useEffect(() => {
     const ctx = gsap.context(() => {
-      progressBarRefs.current.forEach((bar, i) => {
+      const allBars = [
+        ...progressBarMobileRefs.current,
+        ...progressBarDesktopRefs.current,
+      ];
+
+      // Resetear todas las barras
+      allBars.forEach((bar, i) => {
         gsap.set(bar, { scaleX: i === videoIndex ? 0 : 1 });
       });
 
+      // Animar la barra activa (mobile + desktop en el mismo índice)
       barTween.current = gsap.fromTo(
-        progressBarRefs.current[videoIndex],
+        [progressBarMobileRefs.current[videoIndex], progressBarDesktopRefs.current[videoIndex]],
         { scaleX: 0 },
         {
           scaleX: 1,
@@ -72,6 +80,13 @@ export default function Home() {
   useEffect(() => {
     projects.forEach((_, i) => {
       gsap.to(`#bg-video-${i}`, {
+        opacity: i === videoIndex ? 1 : 0,
+        duration: 1,
+        ease: "power2.out",
+      });
+    });
+    projects.forEach((_, i) => {
+      gsap.to(`#list-article-${i}`, {
         opacity: i === videoIndex ? 1 : 0,
         duration: 1,
         ease: "power2.out",
@@ -124,7 +139,7 @@ export default function Home() {
 
   return (
     <Loader Children={
-      <div className="h-screen w-full relative text-background">
+      <div className="h-[100dvh] w-full relative text-background">
         {isVideoOpen && <VideoPlayer handleIsOpen={toggleVideoOpen} videoIndex={videoIndex}></VideoPlayer> }
         <Header></Header>
         <div className="absolute z-10 w-full px-5 pb-5 pt-20 top-0 h-full md:h-fit">
@@ -159,7 +174,34 @@ export default function Home() {
             </li>
           ))}
         </ul>
-        <ul className="absolute bottom-1/2 translate-y-1/2 md:bottom-0 md:translate-y-0 z-10 flex gap-3 m-5 text-xs">
+        <div className="absolute top-1/2 -translate-y-1/2 z-20 gap-3 w-full p-5 text-xs flex md:hidden">
+          <ul className="relative w-full">
+            {
+              projects.map((el, i) => (
+                <article 
+                    key={i}
+                    id={`list-article-${i}`}
+                    onClick={toggleVideoOpen}
+                    className="min-w-52 cursor-pointer w-full absolute top-0">
+                    <div className="my-4 flex flex-col">
+                      <h2 className="uppercase font-medium">{el.title}</h2>
+                      <p className="text-stone-400">{el.studio}</p>
+                    </div>
+                    <div className="relative w-full">
+                      <div
+                        ref={(el) => {
+                          if (el) progressBarMobileRefs.current[i] = el;
+                        }}
+                        className="origin-left w-full h-[0.095rem] bg-background absolute z-10"
+                    ></div>
+                      <div className="w-full h-[0.095rem] bg-stone-600 absolute opacity-40"></div>
+                    </div>
+                  </article>
+              ))
+            }
+          </ul>
+        </div>
+        <ul className="absolute bottom-0 translate-y-0 z-10 gap-3 m-5 text-xs hidden md:flex">
           {projects.map((el, i) => (
             <article 
               key={i}
@@ -172,7 +214,7 @@ export default function Home() {
               <div className="relative w-full">
                 <div
                    ref={(el) => {
-                      if (el) progressBarRefs.current[i] = el;
+                      if (el) progressBarDesktopRefs.current[i] = el;
                     }}
                   className="origin-left w-full h-[0.095rem] bg-background absolute z-10"
               ></div>
