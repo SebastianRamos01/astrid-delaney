@@ -4,6 +4,7 @@ import "./globals.css";
 
 const getInter = Inter({
   variable: "--font-inter",
+  subsets: ['latin']
 });
 
 const getBebas = Bebas_Neue({

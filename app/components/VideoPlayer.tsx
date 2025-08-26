@@ -127,9 +127,9 @@ export default function VideoPlayer({ handleIsOpen, videoIndex }: { handleIsOpen
                             />
                         </div>
                         {/* <div className="flex justify-between text-[0.65rem] mt-1 text-stone-300 font-mono">
-              <span>{formatTime(currentTime)}</span>
-              <span>{formatTime(duration)}</span>
-            </div> */}
+                        <span>{formatTime(currentTime)}</span>
+                        <span>{formatTime(duration)}</span>
+                        </div> */}
                     </div>
                 </nav>
             </div>
