@@ -140,7 +140,7 @@ export default function Home() {
   return (
     <Loader Children={
       <div className="h-[100dvh] w-full relative text-background">
-        {isVideoOpen && <VideoPlayer handleIsOpen={toggleVideoOpen} videoIndex={videoIndex}></VideoPlayer> }
+        {isVideoOpen && <VideoPlayer handleIsOpen={toggleVideoOpen} videoIndex={videoIndex} isVideoOpen={isVideoOpen}></VideoPlayer> }
         <Header></Header>
         <div className="absolute z-10 w-full px-5 pb-5 pt-20 top-0 h-full md:h-fit">
           <div className="text-9xl flex flex-col md:flex-row justify-between font-bebas h-full md:h-fit">

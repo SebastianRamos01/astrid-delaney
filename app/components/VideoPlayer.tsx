@@ -3,7 +3,13 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { projects } from '../data/mainData'
 
-export default function VideoPlayer({ handleIsOpen, videoIndex }: { handleIsOpen: any, videoIndex: any }) {
+type VideoPlayerProps = {
+  handleIsOpen: () => void
+  videoIndex: number
+  isVideoOpen?: boolean
+}
+
+export default function VideoPlayer({ handleIsOpen, videoIndex, isVideoOpen }: VideoPlayerProps) {
 
     const project = projects[videoIndex];
 
@@ -43,7 +49,7 @@ export default function VideoPlayer({ handleIsOpen, videoIndex }: { handleIsOpen
     }, [videoIndex]);
 
     return (
-        <div className={`absolute top-0 w-full h-full z-30 p-4 ${handleIsOpen ? 'opacity-100' : 'opacity-50'}`}>
+        <div className={`absolute top-0 w-full h-full z-30 p-4 ${isVideoOpen ? 'opacity-100' : 'opacity-50'}`}>
             <div className='bg-stone-900 size-full rounded relative'>
                 <div className='font-bebas text-9xl p-3 absolute top-0 left-0 z-10 leading-[84%]'>
                     {project.title}

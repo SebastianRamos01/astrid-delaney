@@ -1,4 +1,3 @@
-import gsap from 'gsap'
 import React from 'react'
 import LinkItem from './LinkItem'
 

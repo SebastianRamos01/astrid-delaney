@@ -9,7 +9,8 @@ const getInter = Inter({
 
 const getBebas = Bebas_Neue({
   variable: "--bebas-neue",
-  weight: '400'
+  weight: '400',
+  subsets: ['latin']
 });
 
 export const metadata: Metadata = {

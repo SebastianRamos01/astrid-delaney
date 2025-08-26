@@ -52,7 +52,7 @@ export default function Loader({ Children } : { Children: React.ReactNode}) {
               </div>
             </div>
             <p>
-              I'm
+              Im
             </p>
           </div>
         </div>
