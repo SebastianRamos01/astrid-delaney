@@ -3,21 +3,18 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { projects } from '../data/mainData'
 
-export default function VideoPlayer({handleIsOpen, videoIndex} : {handleIsOpen : any, videoIndex : any}) {
+export default function VideoPlayer({ handleIsOpen, videoIndex }: { handleIsOpen: any, videoIndex: any }) {
 
-    const iVideo = videoIndex
-    const project = projects[iVideo];
+    const project = projects[videoIndex];
 
     const [isPaused, setIsPaused] = useState(false)
     const [progress, setProgress] = useState(0) // porcentaje (0 - 100)
-    const [duration, setDuration] = useState(0)
-    const [currentTime, setCurrentTime] = useState(0)
 
     const videoRef = useRef<HTMLVideoElement>(null)
 
     const togglePaused = () => {
-    if (videoRef.current) {
-        if (videoRef.current.paused) {
+        if (videoRef.current) {
+            if (videoRef.current.paused) {
                 videoRef.current.play()
                 setIsPaused(false)
             } else {
@@ -30,102 +27,79 @@ export default function VideoPlayer({handleIsOpen, videoIndex} : {handleIsOpen :
     // const [isMuted, setIsMuted] = useState(true)
     // const toggleSound = () => setIsMuted(prev => !prev);
 
-    // Actualizar progreso
-  useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
 
-    const handleTimeUpdate = () => {
-      setCurrentTime(video.currentTime)
-      if (video.duration) {
-        setProgress((video.currentTime / video.duration) * 100)
-      }
-    }
+        const updateProgress = () => {
+            const percent = (video.currentTime / video.duration) * 100;
+            setProgress(percent || 0);
+        };
 
-    const handleLoadedMetadata = () => {
-      setDuration(video.duration)
-    }
+        video.addEventListener('timeupdate', updateProgress);
+        return () => {
+            video.removeEventListener('timeupdate', updateProgress);
+        };
+    }, [videoIndex]);
 
-    video.addEventListener('timeupdate', handleTimeUpdate)
-    video.addEventListener('loadedmetadata', handleLoadedMetadata)
-
-    return () => {
-      video.removeEventListener('timeupdate', handleTimeUpdate)
-      video.removeEventListener('loadedmetadata', handleLoadedMetadata)
-    }
-  }, [])
-
-  // Permitir hacer seek al dar click en la barra
-  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!videoRef.current || !duration) return
-
-    const rect = e.currentTarget.getBoundingClientRect()
-    const clickX = e.clientX - rect.left
-    const newTime = (clickX / rect.width) * duration
-
-    videoRef.current.currentTime = newTime
-    setProgress((newTime / duration) * 100)
-  }
-    
-
-  return (
-    <div className={`absolute top-0 w-full h-full z-30 p-4 ${handleIsOpen ? 'opacity-100' : 'opacity-50'}`}>
-        <div className='bg-stone-900 size-full rounded relative'>
-            <div className='font-bebas text-9xl p-3 absolute top-0 left-0 z-10 leading-[84%]'>
-                {project.title}
-            </div>
-            <div 
-                onClick={handleIsOpen}
-                className='w-fit right-0 top-0 absolute m-3 z-10 cursor-pointer'>
-                <div className='w-fit bg-background rounded-full p-2'>
-                    <svg className="size-5 text-foreground" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18 17.94 6M18 18 6.06 6"/>
-                    </svg>
+    return (
+        <div className={`absolute top-0 w-full h-full z-30 p-4 ${handleIsOpen ? 'opacity-100' : 'opacity-50'}`}>
+            <div className='bg-stone-900 size-full rounded relative'>
+                <div className='font-bebas text-9xl p-3 absolute top-0 left-0 z-10 leading-[84%]'>
+                    {project.title}
                 </div>
-            </div>
-            {
-                isPaused && (
-                    <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10'>
-                        <div
-                            onClick={togglePaused} 
-                            className='w-fit bg-background rounded-full p-2 cursor-pointer'>
-                            <svg className="size-5 text-foreground" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                                <path fillRule="evenodd" d="M8 5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H8Zm7 0a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1Z" clipRule="evenodd"/>
-                            </svg>
-                        </div>
+                <div
+                    onClick={handleIsOpen}
+                    className='w-fit right-0 top-0 absolute m-3 z-10 cursor-pointer'>
+                    <div className='w-fit bg-background rounded-full p-2'>
+                        <svg className="size-5 text-foreground" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18 17.94 6M18 18 6.06 6" />
+                        </svg>
                     </div>
-                )
-            }
-            <div className='size-full absolute bottom-0 overflow-hidden'>
-                { 
-                    project && (
-                        <div
-                            onClick={togglePaused} 
-                            className='size-full object-cover'>
-                            <video 
-                                src={project.videoSrc}
-                                ref={videoRef}
-                                autoPlay
-                                className='object-cover size-full cursor-pointer'></video>
+                </div>
+                {
+                    isPaused && (
+                        <div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10'>
+                            <div
+                                onClick={togglePaused}
+                                className='w-fit bg-background rounded-full p-2 cursor-pointer'>
+                                <svg className="size-5 text-foreground" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                    <path fillRule="evenodd" d="M8.6 5.2A1 1 0 0 0 7 6v12a1 1 0 0 0 1.6.8l8-6a1 1 0 0 0 0-1.6l-8-6Z" clipRule="evenodd" />
+                                </svg>
+                            </div>
                         </div>
                     )
                 }
-            </div>
-            <nav className='flex items-center absolute bottom-0 w-full p-3 gap-2'>
-                <div
-                    className='bg-background rounded-full p-2 hidden cursor-pointer'
-                    onClick={togglePaused}>
+                <div className='size-full absolute bottom-0 overflow-hidden'>
+                    {
+                        project && (
+                            <div
+                                onClick={togglePaused}
+                                className='size-full object-cover'>
+                                <video
+                                    src={project.videoSrc}
+                                    ref={videoRef}
+                                    autoPlay
+                                    className='object-cover size-full cursor-pointer'></video>
+                            </div>
+                        )
+                    }
+                </div>
+                <nav className='flex items-center absolute bottom-0 w-full p-3 gap-2'>
+                    <div
+                        className='bg-background rounded-full p-2 cursor-pointer'
+                        onClick={togglePaused}>
                         {isPaused ? (
                             <svg className="size-5 text-foreground" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                                <path  fillRule="evenodd" d="M8.6 5.2A1 1 0 0 0 7 6v12a1 1 0 0 0 1.6.8l8-6a1 1 0 0 0 0-1.6l-8-6Z" clipRule="evenodd"/>
+                                <path fillRule="evenodd" d="M8.6 5.2A1 1 0 0 0 7 6v12a1 1 0 0 0 1.6.8l8-6a1 1 0 0 0 0-1.6l-8-6Z" clipRule="evenodd" />
                             </svg>
                         ) : (
                             <svg className="size-5 text-foreground" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                                <path fillRule="evenodd" d="M8 5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H8Zm7 0a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1Z" clipRule="evenodd"/>
+                                <path fillRule="evenodd" d="M8 5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H8Zm7 0a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1Z" clipRule="evenodd" />
                             </svg>
                         )}
-                </div>
-                {/* <div>
+                    </div>
+                    {/* <div>
                     <div
                         onClick={toggleSound} 
                         className='w-fit bg-background rounded-full p-2 hidden cursor-pointer'>
@@ -143,25 +117,24 @@ export default function VideoPlayer({handleIsOpen, videoIndex} : {handleIsOpen :
                         </svg>
                     </div>
                 </div> */}
-                <div 
-            className='w-full cursor-pointer'
-            onClick={handleSeek}
-          >
-            <div className="relative w-full h-1 bg-stone-600 rounded">
-              <div 
-                className="absolute top-0 left-0 h-1 bg-background rounded"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            {/* <div className="flex justify-between text-[0.65rem] mt-1 text-stone-300 font-mono">
+                    <div
+                        className='w-full'
+                    >
+                        <div className="relative w-full h-1 bg-stone-600 rounded">
+                            <div
+                                className="absolute top-0 left-0 h-1 bg-background rounded"
+                                style={{ width: `${progress}%` }}
+                            />
+                        </div>
+                        {/* <div className="flex justify-between text-[0.65rem] mt-1 text-stone-300 font-mono">
               <span>{formatTime(currentTime)}</span>
               <span>{formatTime(duration)}</span>
             </div> */}
-          </div>
-            </nav>
+                    </div>
+                </nav>
+            </div>
         </div>
-    </div>
-  )
+    )
 }
 
 // function formatTime(time: number) {
