@@ -49,10 +49,15 @@ export default function VideoPlayer({ handleIsOpen, videoIndex, isVideoOpen }: V
     }, [videoIndex]);
 
     return (
-        <div className={`absolute top-0 w-full h-full z-30 p-4 ${isVideoOpen ? 'opacity-100' : 'opacity-50'}`}>
+        <div className={`absolute top-0 w-screen h-screen z-30 p-4 ${isVideoOpen ? 'opacity-100' : 'opacity-50'}`}>
             <div className='bg-stone-900 size-full rounded relative'>
-                <div className='font-bebas text-9xl p-3 absolute top-0 left-0 z-10 leading-[84%]'>
-                    {project.title}
+                <div className='p-3 absolute top-0 left-0 z-10 flex flex-col gap-1'>
+                    <div className='font-bebas text-4xl leading-[84%]'>
+                        {project.title}
+                    </div>
+                    <div className='text-sm font-medium font-inter text-stone-400'>
+                        {project.studio}
+                    </div>
                 </div>
                 <div
                     onClick={handleIsOpen}

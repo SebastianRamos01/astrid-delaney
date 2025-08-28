@@ -32,7 +32,7 @@ export default function Loader({ Children } : { Children: React.ReactNode}) {
     })
 
   return (
-    <div className="h-screen w-full relative overflow-hidden">
+    <div className="h-[100dvh] w-full relative overflow-hidden">
         <div id="block-up" className="h-full w-full bg-[#1a1a1a] absolute top-0 z-50">
         </div>
         <div id="loader-text-cont" className="overflow-hidden w-fit uppercase text-background font-bold absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50">

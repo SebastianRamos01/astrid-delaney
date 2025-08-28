@@ -143,7 +143,7 @@ export default function Home() {
         {isVideoOpen && <VideoPlayer handleIsOpen={toggleVideoOpen} videoIndex={videoIndex} isVideoOpen={isVideoOpen}></VideoPlayer> }
         <Header></Header>
         <div className="absolute z-10 w-full px-5 pb-5 pt-20 top-0 h-full md:h-fit">
-          <div className="text-9xl flex flex-col md:flex-row justify-between font-bebas h-full md:h-fit">
+          <div className="text-8xl flex flex-col md:flex-row justify-between font-bebas h-full md:h-fit">
             {words.map((el, i) => (
               <div key={i} className='w-full'>
                 <div className={`overflow-hidden h-fit leading-[84%] ${i === 1 ? 'text-right' : ''}`}>
